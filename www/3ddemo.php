@@ -8,191 +8,85 @@
 
 <script type="text/javascript" src="/glmatrix/glMatrix.min.js"></script>
 
-<script id="shader-fs" type="x-shader/x-fragment">
-    precision mediump float;
+<script type="text/javascript" src="../three.js/build/three.min.js"></script>
+<script type="text/javascript" src="../RequestAnimationFrame.js/RequestAnimationFrame.js"></script>
+<script>
 
-    void main(void) {
-        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-    }
-</script>
+var renderer = null,
+	scene = null,
+	camera = null,
+	cube = null,
+	animating = false;
 
-<script id="shader-vs" type="x-shader/x-vertex">
-    attribute vec3 aVertexPosition;
+function onload()
+{
+	var container = document.getElementById("container");
 
-    uniform mat4 uMVMatrix;
-    uniform mat4 uPMatrix;
+	renderer = new THREE.WebGLRenderer({antialias: true});
+	renderer.setSize(container.offsetWidth, container.offsetHeight);
+	container.appendChild(renderer.domElement);
 
-    void main(void) {
-        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
-    }
-</script>
+	scene = new THREE.Scene();
 
+	camera = new THREE.PerspectiveCamera(45, container.offsetWidth/container.offsetHeight, 1, 4000);
+	camera.position.set(0,0,3);
 
-<script type="text/javascript">
+	var light = new THREE.DirectionalLight(0xffffff, 1.5);
+	light.position.set(0,0,1);
+	scene.add(light);
 
-    var gl;
-    function initGL(canvas) {
-        try {
-            gl = canvas.getContext("experimental-webgl");
-            gl.viewportWidth = canvas.width;
-            gl.viewportHeight = canvas.height;
-        } catch (e) {
-        }
-        if (!gl) {
-            alert("Could not initialise WebGL, sorry :-(");
-        }
-    }
+	var mapUrl = "../image/test.jpg";
+	var map = THREE.ImageUtils.loadTexture(mapUrl);
 
+	var material = new THREE.MeshPhongMaterial({map: map});
 
-    function getShader(gl, id) {
-        var shaderScript = document.getElementById(id);
-        if (!shaderScript) {
-            return null;
-        }
+	var geometry = new THREE.CubeGeometry(1,1,1);
 
-        var str = "";
-        var k = shaderScript.firstChild;
-        while (k) {
-            if (k.nodeType == 3) {
-                str += k.textContent;
-            }
-            k = k.nextSibling;
-        }
+	cube = new THREE.Mesh(geometry, mateiral);
 
-        var shader;
-        if (shaderScript.type == "x-shader/x-fragment") {
-            shader = gl.createShader(gl.FRAGMENT_SHADER);
-        } else if (shaderScript.type == "x-shader/x-vertex") {
-            shader = gl.createShader(gl.VERTEX_SHADER);
-        } else {
-            return null;
-        }
+	cube.rotation.x = Math.PI / 5;
+	cube.ratation.y = Math.PI / 5;
 
-        gl.shaderSource(shader, str);
-        gl.compileShader(shader);
+	scene.add(cube);
 
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            alert(gl.getShaderInfoLog(shader));
-            return null;
-        }
+	addMouseHandler();
 
-        return shader;
-    }
+	run();
+}
 
+function run()
+{
+	renderer.render(scene,camera);
+	if(animating){
+		cube.rotation.y -= 0.01;
+	}
 
-    var shaderProgram;
+	requestAnimationFrame(run);
+}
 
-    function initShaders() {
-        var fragmentShader = getShader(gl, "shader-fs");
-        var vertexShader = getShader(gl, "shader-vs");
+function addMouseHandler()
+{
+	var dom = renderer.domElement;
+	dom.addEventlistener('mouseup', onMouseUp, false);
+}
 
-        shaderProgram = gl.createProgram();
-        gl.attachShader(shaderProgram, vertexShader);
-        gl.attachShader(shaderProgram, fragmentShader);
-        gl.linkProgram(shaderProgram);
-
-        if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-            alert("Could not initialise shaders");
-        }
-
-        gl.useProgram(shaderProgram);
-
-        shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-        gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
-
-        shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
-        shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
-    }
-
-
-    var mvMatrix = mat4.create();
-    var pMatrix = mat4.create();
-
-    function setMatrixUniforms() {
-        gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
-        gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
-    }
-
-
-
-    var triangleVertexPositionBuffer;
-    var squareVertexPositionBuffer;
-
-    function initBuffers() {
-        triangleVertexPositionBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
-        var vertices = [
-             0.0,  1.0,  0.0,
-            -1.0, -1.0,  0.0,
-             1.0, -1.0,  0.0
-        ];
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-        triangleVertexPositionBuffer.itemSize = 3;
-        triangleVertexPositionBuffer.numItems = 3;
-
-        squareVertexPositionBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer);
-        vertices = [
-             1.0,  1.0,  0.0,
-            -1.0,  1.0,  0.0,
-             1.0, -1.0,  0.0,
-            -1.0, -1.0,  0.0
-        ];
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-        squareVertexPositionBuffer.itemSize = 3;
-        squareVertexPositionBuffer.numItems = 4;
-    }
-
-
-    function drawScene() {
-        gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-        mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
-
-        mat4.identity(mvMatrix);
-
-        mat4.translate(mvMatrix, [-1.5, 0.0, -7.0]);
-        gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
-        gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, triangleVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-        setMatrixUniforms();
-        gl.drawArrays(gl.TRIANGLES, 0, triangleVertexPositionBuffer.numItems);
-
-
-        mat4.translate(mvMatrix, [3.0, 0.0, 0.0]);
-        gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer);
-        gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, squareVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-        setMatrixUniforms();
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, squareVertexPositionBuffer.numItems);
-    }
-
-
-
-    function webGLStart() {
-        var canvas = document.getElementById("lesson01-canvas");
-        initGL(canvas);
-        initShaders();
-        initBuffers();
-
-        gl.clearColor(0.0, 0.0, 0.0, 1.0);
-        gl.enable(gl.DEPTH_TEST);
-
-        drawScene();
-    }
-
+function onMouseUp(event){
+	event.preventDefault();
+	animating = !animating;
+}
 
 </script>
-
 
 </head>
 
+<body onload="onload();">
+	<?php include "navigation.php"?>
+	<div id="container" style="width:95%; height:80%; position:absolute;">
+	</div>
+	<div id="prompt" style="width:95%; height:6%; bottom:0; position:absolute;">
+		Click to animate the cube
+	</div>
 
-<body onload="webGLStart();">
-
-    <?php include "navigation.php"?>
-
-    <canvas id="lesson01-canvas" style="border: none;" width="500" height="500"></canvas>
 
 </body>
-
 </html>
