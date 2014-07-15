@@ -1,4 +1,4 @@
-AuthType Basic
-AuthName "restricted files"
-AuthUserFile /var/www/.htpassword
-Require user tingtao
+#AuthType Basic
+#AuthName "restricted files"
+#AuthUserFile /var/3d-living-room/3d-living-room/3d-living-room/www/.htpassword
+#Require user tingtao

@@ -8,8 +8,8 @@
 
 <script type="text/javascript" src="/glmatrix/glMatrix.min.js"></script>
 
-<script type="text/javascript" src="../three.js/build/three.min.js"></script>
-<script type="text/javascript" src="../RequestAnimationFrame.js/RequestAnimationFrame.js"></script>
+<script type="text/javascript" src="../three.min.js"></script>
+<script type="text/javascript" src="../requestAnimationFrame.js"></script>
 <script>
 
 var renderer = null,
@@ -35,17 +35,17 @@ function onload()
 	light.position.set(0,0,1);
 	scene.add(light);
 
-	var mapUrl = "../image/test.jpg";
+	var mapUrl = "/test.jpg";
 	var map = THREE.ImageUtils.loadTexture(mapUrl);
 
 	var material = new THREE.MeshPhongMaterial({map: map});
 
 	var geometry = new THREE.CubeGeometry(1,1,1);
 
-	cube = new THREE.Mesh(geometry, mateiral);
+	cube = new THREE.Mesh(geometry, material);
 
 	cube.rotation.x = Math.PI / 5;
-	cube.ratation.y = Math.PI / 5;
+	cube.rotation.y = Math.PI / 5;
 
 	scene.add(cube);
 
@@ -66,8 +66,8 @@ function run()
 
 function addMouseHandler()
 {
-	var dom = renderer.domElement;
-	dom.addEventlistener('mouseup', onMouseUp, false);
+	var mydom = renderer.domElement;
+	mydom.addEventListener('mouseup', onMouseUp, false);
 }
 
 function onMouseUp(event){
@@ -81,7 +81,7 @@ function onMouseUp(event){
 
 <body onload="onload();">
 	<?php include "navigation.php"?>
-	<div id="container" style="width:95%; height:80%; position:absolute;">
+	<div id="container" style="width:95%; height:95%; position:absolute;">
 	</div>
 	<div id="prompt" style="width:95%; height:6%; bottom:0; position:absolute;">
 		Click to animate the cube
