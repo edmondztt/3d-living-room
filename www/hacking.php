@@ -3,6 +3,7 @@
 <head>
 	<title>Hacking</title>
 	<?php include "header.php" ?>
+	<link rel="stylesheet" type="text/css" href="mystyle.css">
 </head>
 <body>
 	<?php include "navigation.php" ?>
@@ -12,7 +13,9 @@
 	<p>
 		My hacking experience.
 	</p>
-	<embed src="/Theme_Pirates_of_Caribbean.mp3" height="40" width="100">
+	<audio autoplay="autoplay" loop="loop">
+		<source src="/Theme_Pirates_of_Caribbean.mp3" />
+	</audio>
 
 
 </body>
