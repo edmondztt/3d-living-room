@@ -12,7 +12,7 @@
 	<p>
 		My hacking experience.
 	</p>
-	<bgsound src="/Theme_Pirates_of_Caribbean.mp3" loop="infinite">
+	<embed src="/Theme_Pirates_of_Caribbean.mp3" height="40" width="100">
 
 
 </body>
